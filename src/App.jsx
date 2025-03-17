@@ -18,22 +18,13 @@ function App() {
   // console.log("DATA FROM API ", dataFromApi);
 
   const sdasd = useGetAllPostQuery();
-  console.log("DATA FROM API ", sdasd);
+  // console.log("DATA FROM API ", sdasd);
 
 
   // mutation
 
   const [postUsing, { isLoading }] = usePostUsingMutation();
 
-  // const submitForm = async (e) => {
-  //   e.preventDefault();
-  //   const data = {
-  //     title: e.target.title.value,
-  //     body: e.target.body.value,
-  //     userId: 1,
-  //   };
-  //   await postUsing(data).unwrap();
-  // };
 
   // useEffect(() => {
   //   dispatch(getUserNameFromApi("Shreeraj-Parmar"));

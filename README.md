@@ -1,12 +1,63 @@
-# React + Vite
+# Chat App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+```
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-Currently, two official plugins are available:
+export const chatApi = createApi({
+  reducerPath: "chatApi",
+  baseQuery: fetchBaseQuery({ baseUrl: "https://example.com/api" }), // Fake API URL
+  endpoints: (builder) => ({
+    getMessages: builder.query({
+      query: (userId) => `messages/${userId}`, // Fetch old messages for the user
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+      // 🟢 This function runs when a component starts using this query
+      async onCacheEntryAdded(userId, { dispatch, cacheEntryRemoved, updateCachedData }) {
+        // 🟡 1️⃣ Create WebSocket connection when query starts
+        const ws = new WebSocket(`wss://example.com/messages/${userId}`);
 
-## Expanding the ESLint configuration
+        ws.addEventListener("message", (event) => {
+          const newMessage = JSON.parse(event.data); // Convert received data to JSON
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+          // 🔵 2️⃣ Update Redux state with the new message
+          updateCachedData((draft) => {
+            draft.push(newMessage); // Append new message to existing chat messages
+          });
+        });
+
+        try {
+          // ⏳ 3️⃣ Wait until the query is unsubscribed or component unmounts
+          await cacheEntryRemoved;
+        } finally {
+          // 🔴 4️⃣ Close WebSocket when the component using this query is removed
+          ws.close();
+        }
+      },
+    }),
+  }),
+});
+
+export const { useGetMessagesQuery } = chatApi;
+```
+
+2. update into the state
+
+```
+const chatSlice = createSlice({
+  name: "chat",
+  initialState: { messages: [] },
+  reducers: {},
+
+  extraReducers: (builder) => {
+    builder.addMatcher(
+      chatApi.endpoints.getMessages.matchFulfilled,
+      (state, action) => {
+        state.messages = action.payload;  // Sync Redux state
+      }
+    );
+  },
+});
+
+```
+
+
+

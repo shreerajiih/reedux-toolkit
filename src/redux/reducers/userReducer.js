@@ -60,7 +60,7 @@ import { changeNameOfuserAction } from "./userAciton";
 })
 
 
-export const getUserNameFromApi = createAsyncThunk(
+export const getUserNameFromApi = createAsyncThunk( // it will return promise
     "getUserNameFromApi",
     async (name) => {
         const response = await fetch(`https://api.githusb.com/admin/${name}`)

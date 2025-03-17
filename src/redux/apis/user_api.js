@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
+import { changeNameOfUser } from "../reducers/userReducer";
 
 export const userApi = createApi({
     reducerPath: "userApi",
@@ -19,7 +20,16 @@ export const userApi = createApi({
                 url: `posts/${id}`,
                 method: "GET"
             }),
-            providesTags: ["postList"]
+            // providesTags: ["postList"],
+            async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+                try {
+                    const { data } = await queryFulfilled;
+                console.log("DATA INSIDE THE ONQUERYSTARTED", data);    
+                    dispatch(changeNameOfUser(data.title)); // Dispatch action to update Redux
+                } catch (error) {
+                    console.error("Failed to fetch user:", error);
+                } 
+            }
 
         }),
         postUsing: builder.mutation({
